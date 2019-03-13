@@ -16,20 +16,20 @@ abstract class BaseVector<T : Number>(protected val elements: List<T>) {
 
     protected fun checkAndMap(other: BaseVector<T>, expression: (T, T) -> T) =
             when {
-                this.size != other.size -> throw IllegalArgumentException("vectors size are not same")
-                else -> elements.mapIndexed { index, item -> expression(item, other.elements[index]) }
+                this.size == other.size -> elements.mapIndexed { index, item -> expression(item, other.elements[index]) }
+                else -> throw IllegalArgumentException("vectors size are not same")
             }
 
     protected fun getSubElementsOrThrow(elementsRange: IntRange) =
             when {
-                !elements.containsSub(elementsRange) -> throw IllegalArgumentException("Vector doesn't contains given range")
-                else -> elements.subList(elementsRange.first - 1, elementsRange.last)
+                elements.containsSub(elementsRange) -> elements.subList(elementsRange.first - 1, elementsRange.last)
+                else -> throw IllegalArgumentException("Vector doesn't contains given range")
             }
 
     operator fun get(index: Int) =
             when {
-                index >= elements.size -> throw IllegalArgumentException("index that you set is greater than Vector size")
-                else -> elements[index]
+                elements.containsIndex(index) -> elements[index]
+                else -> throw IllegalArgumentException("index that you set is greater than Vector size")
             }
 
     override fun hashCode() = size.hashCode() + elements.hashCode()
@@ -97,8 +97,8 @@ operator fun Double.plus(vector: BaseVector<Double>) = DoubleVector(vector.map {
 operator fun Double.minus(vector: BaseVector<Double>) = DoubleVector(vector.map { this - it })
 operator fun Double.rem(vector: BaseVector<Double>) = DoubleVector(vector.map { this % it })
 
-private fun <E> List<E>.containsSub(elementsRange: IntRange) =
-        elementsRange.first > 0 && elementsRange.last < this.size
+private fun <E> List<E>.containsSub(elementsRange: IntRange) = elementsRange.first > 0 && elementsRange.last < this.size
+private fun <E> List<E>.containsIndex(index: Int) = index >= 0 && index < this.size
 
 private fun <T> arrayOfAndFill(count: Int, fill: T): List<T> {
     val elements = mutableListOf<T>()
